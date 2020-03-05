@@ -42,21 +42,22 @@ class Classify():
                     values = line.split(",")
                     tmp.append(values)
             self.file_annotations.append(tmp)
-    def make_cropped_dataset(self, addr):
+    def make_cropped_dataset(self, addr, size):
         for i in range(len(self.filenames)):
             image = cv2.imread(addr+"/"+self.filenames[i].rstrip("\n"))
-            print(addr+"/"+self.filenames[i])
+            # print(addr+"/"+self.filenames[i])
             for j in range(len(self.file_annotations[i])):
                 x = int(self.file_annotations[i][j][0])
                 y = int(self.file_annotations[i][j][1])
                 w = int(self.file_annotations[i][j][2])
                 h = int(self.file_annotations[i][j][3])
                 label = self.file_annotations[i][j][4]
-                print("x = ", x, "y = ", y, "w = ", w, "h = ", h, "label = ", label)
-                print("img shape = ", image.shape)
+                # print("x = ", x, "y = ", y, "w = ", w, "h = ", h, "label = ", label)
+                # print("img shape = ", image.shape)
                 crop_img = image[y:y+h, x:x+w, 0]
-                print("crop_img = ", crop_img)
-                self.X_data.append(crop_img)
+                resized_image = cv2.resize(crop_img, (size, size))
+                # print("crop_img = ", crop_img)
+                self.X_data.append(resized_image)
                 self.y_data.append(label.rstrip("\n"))
         
     def read_cropped_image_list(self, addr, train_test = True):
@@ -76,10 +77,22 @@ class Classify():
             for j in range(num_of_files[i]):
                 self.read_cropped_image_list(addr+"/"+folder_names[i]+"/train_list_"+str(j)+".txt", True)
                 self.read_cropped_image_list(addr+"/"+folder_names[i]+"/test_list_"+str(j)+".txt", False)
+    
     def read_resize_image(self, addr):
         image = cv2.imread(addr)
         resized_image = cv2.resize(image, (28, 28))
         return resized_image 
+
+    def save_dataset(self, name):
+        X = np.array(self.X_data)
+        np.save(name, X)
+    def save_label(self, name):
+        y = np.array(self.y_data)
+        np.save(name, y)
+    def open_dataset(self, name):
+        self.X_data = np.load(name)
+    def open_label(self, name):
+        self.y_data = np.load(name)
 
     
     # def read_cropped_images(self, addr):
@@ -94,25 +107,24 @@ class Classify():
 
 if __name__ == '__main__':
     c = Classify()
-    # c.read_npy("../data/train_real_images.npy")
-    # c.read_annotations("../data/Classify/BIRD_v210_1.txt")
-    # print(c.file_annotations[0][0][0])
-    # print(len(c.filenames))
-    # c.make_cropped_dataset("../data/Classify")
-    # print(len(c.y_data))
-    # print(c.y_data[0])
-    # print(c.X_data[0])
-    # cv2.imshow("image", c.X_data[1])
+    
+
+    # # Cropped Version
+    # folder_names = ["bird_vs_nonbird", "hawk_vs_crow"]
+    # num_of_files = [5, 10]
+    # c.read_all_cropped_image_list("../../data/Classify/cropped/image_lists", folder_names, num_of_files)
+    # cv2.imshow("image", c.read_resize_image(c.train_cropped_images_filenames[15000]))
     # cv2.waitKey(0)
-    folder_names = ["bird_vs_nonbird", "hawk_vs_crow"]
-    num_of_files = [5, 10]
-    print(folder_names)
-    print(num_of_files)
-    c.read_all_cropped_image_list("../../data/Classify/cropped/image_lists", folder_names, num_of_files)
-    print(len(c.train_cropped_images_filenames), len(c.train_cropped_labels))
-    print(len(c.test_cropped_images_filenames), len(c.test_cropped_labels))
-    # print(c.train_cropped_images_filenames)
-    # image = cv2.imread(c.train_cropped_images_filenames[10])
-    print("image shape = ", c.read_resize_image(c.train_cropped_images_filenames[10]).shape)
-    cv2.imshow("image", c.read_resize_image(c.train_cropped_images_filenames[10]))
+
+    # Real Dataset Version
+
+    # c.read_annotations("../../data/Classify/BIRD_sample.txt")
+    # c.make_cropped_dataset("../../data/Classify", size=28)
+    # print(c.X_data[2].shape)
+    # c.save_dataset("data.npy")
+    # c.save_label("label.npy")
+
+    c.open_dataset("data.npy")
+    c.open_label("label.npy")
+    cv2.imshow("image", c.X_data[2])
     cv2.waitKey(0)
