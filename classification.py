@@ -18,6 +18,7 @@ class Classify():
         self.test_cropped_images_filenames =[]
         self.test_cropped_images =[]
         self.test_cropped_labels =[]
+        self.raw_images = []
 
 
     # def read_video(self, addr):
@@ -40,11 +41,15 @@ class Classify():
                     tmp = []
                 else:
                     values = line.split(",")
+                    values[4] = values[4].rstrip("\n")
                     tmp.append(values)
             self.file_annotations.append(tmp)
+
     def make_cropped_dataset(self, addr, size):
         for i in range(len(self.filenames)):
             image = cv2.imread(addr+"/"+self.filenames[i].rstrip("\n"))
+            self.raw_images.append(image)
+            print("image.shape =  ", image.shape)
             # print(addr+"/"+self.filenames[i])
             for j in range(len(self.file_annotations[i])):
                 x = int(self.file_annotations[i][j][0])
@@ -52,13 +57,20 @@ class Classify():
                 w = int(self.file_annotations[i][j][2])
                 h = int(self.file_annotations[i][j][3])
                 label = self.file_annotations[i][j][4]
+                label = label.rstrip("\n")
                 # print("x = ", x, "y = ", y, "w = ", w, "h = ", h, "label = ", label)
                 # print("img shape = ", image.shape)
                 crop_img = image[y:y+h, x:x+w, 0]
                 resized_image = cv2.resize(crop_img, (size, size))
                 # print("crop_img = ", crop_img)
                 self.X_data.append(resized_image)
-                self.y_data.append(label.rstrip("\n"))
+                if(label == "b"):
+                    self.y_data.append(0)
+                elif(label == "n"):
+                    self.y_data.append(1)
+                elif (label == "u"):
+                    self.y_data.append(2)
+        
         
     def read_cropped_image_list(self, addr, train_test = True):
         with open(addr) as openfileobject:
@@ -94,6 +106,17 @@ class Classify():
     def open_label(self, name):
         self.y_data = np.load(name)
 
+    def save_raw_dataset(self, name):
+        X = np.array(self.raw_images)
+        np.save(name, X)
+    def save_raw_label(self, name):
+        y = np.array(self.file_annotations)
+        np.save(name, y)
+    def open_raw_dataset(self, name):
+        self.raw_images = np.load(name, allow_pickle=True)
+    def open_raw_label(self, name):
+        self.file_annotations = np.load(name, allow_pickle=True)
+
     
     # def read_cropped_images(self, addr):
     #     for i in range(len(self.train_cropped_images_filenames)):
@@ -116,6 +139,12 @@ if __name__ == '__main__':
     # cv2.imshow("image", c.read_resize_image(c.train_cropped_images_filenames[15000]))
     # cv2.waitKey(0)
 
+
+
+################################################
+
+
+
     # Real Dataset Version
 
     # c.read_annotations("../../data/Classify/BIRD_sample.txt")
@@ -123,8 +152,18 @@ if __name__ == '__main__':
     # print(c.X_data[2].shape)
     # c.save_dataset("data.npy")
     # c.save_label("label.npy")
+    # c.save_raw_dataset("raw_data.npy")
+    # c.save_raw_label("raw_label.npy")
 
     c.open_dataset("data.npy")
     c.open_label("label.npy")
-    cv2.imshow("image", c.X_data[2])
+    c.open_raw_dataset("raw_data.npy")
+    c.open_raw_label("raw_label.npy")
+
+    # print(c.y_data)
+    cv2.imshow("image", c.raw_images[2])
+    # for i in range(len(c.file_annotations)):
+    #     print(str(c.file_annotations[i]) + "\n\n")
+    print(c.file_annotations)
+
     cv2.waitKey(0)
