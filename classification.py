@@ -76,7 +76,10 @@ class Classify():
             for j in range(num_of_files[i]):
                 self.read_cropped_image_list(addr+"/"+folder_names[i]+"/train_list_"+str(j)+".txt", True)
                 self.read_cropped_image_list(addr+"/"+folder_names[i]+"/test_list_"+str(j)+".txt", False)
-                
+    def read_resize_image(self, addr):
+        image = cv2.imread(addr)
+        resized_image = cv2.resize(image, (28, 28))
+        return resized_image 
 
     
     # def read_cropped_images(self, addr):
@@ -108,3 +111,8 @@ if __name__ == '__main__':
     c.read_all_cropped_image_list("../../data/Classify/cropped/image_lists", folder_names, num_of_files)
     print(len(c.train_cropped_images_filenames), len(c.train_cropped_labels))
     print(len(c.test_cropped_images_filenames), len(c.test_cropped_labels))
+    # print(c.train_cropped_images_filenames)
+    # image = cv2.imread(c.train_cropped_images_filenames[10])
+    print("image shape = ", c.read_resize_image(c.train_cropped_images_filenames[10]).shape)
+    cv2.imshow("image", c.read_resize_image(c.train_cropped_images_filenames[10]))
+    cv2.waitKey(0)
