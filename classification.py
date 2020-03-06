@@ -72,23 +72,30 @@ class Classify():
                     self.y_data.append(2)
         
         
-    def read_cropped_image_list(self, addr, train_test = True):
+    def read_cropped_image_list(self, addr, folder, train_test = True):
         with open(addr) as openfileobject:
             for line in openfileobject:
                 values = line.split(" ")
                 values[1] = int(values[1].rstrip("\n"))
                 if(train_test):
                     self.train_cropped_images_filenames.append(addr[0:27]+values[0][1:])
-                    self.train_cropped_labels.append(values[1])
+                    if(folder == 0 and values[1] == 1):
+                        self.train_cropped_labels.append(0)
+                    else:
+                        self.train_cropped_labels.append(1)
+
                 else:
                     self.test_cropped_images_filenames.append(addr[0:27]+values[0][1:])
-                    self.test_cropped_labels.append(values[1])
+                    if(folder == 0 and values[1] == 1):
+                        self.test_cropped_labels.append(0)
+                    else:
+                        self.test_cropped_labels.append(1)
 
     def read_all_cropped_image_list(self, addr, folder_names, num_of_files):
         for i in range(len(folder_names)):
             for j in range(num_of_files[i]):
-                self.read_cropped_image_list(addr+"/"+folder_names[i]+"/train_list_"+str(j)+".txt", True)
-                self.read_cropped_image_list(addr+"/"+folder_names[i]+"/test_list_"+str(j)+".txt", False)
+                self.read_cropped_image_list(addr+"/"+folder_names[i]+"/train_list_"+str(j)+".txt", i, True)
+                self.read_cropped_image_list(addr+"/"+folder_names[i]+"/test_list_"+str(j)+".txt", i, False)
     
     def read_resize_image(self, addr):
         image = cv2.imread(addr)
@@ -132,12 +139,24 @@ if __name__ == '__main__':
     c = Classify()
     
 
-    # # Cropped Version
-    # folder_names = ["bird_vs_nonbird", "hawk_vs_crow"]
-    # num_of_files = [5, 10]
-    # c.read_all_cropped_image_list("../../data/Classify/cropped/image_lists", folder_names, num_of_files)
+    # Cropped Version
+    folder_names = ["bird_vs_nonbird", "hawk_vs_crow"]
+    num_of_files = [5, 10]
+    c.read_all_cropped_image_list("../../data/Classify/cropped/image_lists", folder_names, num_of_files)
+    # print(c.train_cropped_labels)
     # cv2.imshow("image", c.read_resize_image(c.train_cropped_images_filenames[15000]))
     # cv2.waitKey(0)
+
+    print(len(c.train_cropped_images_filenames))
+    print(len(c.test_cropped_images_filenames))
+
+    # for i in range(100):
+    #     print(c.train_cropped_labels[i])
+    #     cv2.imshow("image", c.read_resize_image(c.train_cropped_images_filenames[i]))
+    #     if cv2.waitKey(0) > 0:
+    #         continue
+
+
 
 
 
@@ -155,15 +174,20 @@ if __name__ == '__main__':
     # c.save_raw_dataset("raw_data.npy")
     # c.save_raw_label("raw_label.npy")
 
-    c.open_dataset("data.npy")
-    c.open_label("label.npy")
-    c.open_raw_dataset("raw_data.npy")
-    c.open_raw_label("raw_label.npy")
+    # c.open_dataset("data.npy")
+    # c.open_label("label.npy")
+    # c.open_raw_dataset("raw_data.npy")
+    # c.open_raw_label("raw_label.npy")
 
     # print(c.y_data)
-    cv2.imshow("image", c.raw_images[2])
+    # cv2.imshow("image", c.raw_images[2])
     # for i in range(len(c.file_annotations)):
     #     print(str(c.file_annotations[i]) + "\n\n")
-    print(c.file_annotations)
+    # print(c.file_annotations)
 
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
+
+    # c.read_npy("../../data/train_real_images.npy")
+    # print("npy data: ", c.npy_data[2].shape)
+    # cv2.imshow("image", c.npy_data)
+    # cv2.waitKey(0)
