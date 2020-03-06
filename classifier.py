@@ -13,7 +13,7 @@ session = InteractiveSession(config=config)
 x_data = np.load(sys.argv[1])
 y_data = np.load(sys.argv[2])
 
-train_size = 6000
+train_size = 8000
 
 x_train = x_data[:train_size].astype(float) / 255.0
 y_train = tf.keras.utils.to_categorical(y_data[:train_size], 3)
