@@ -10,15 +10,18 @@ config = ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 
-x_data = np.load(sys.argv[1])
-y_data = np.load(sys.argv[2])
+x_train = np.load(sys.argv[1]).astype(float) / 255.0
+y_train = tf.keras.utils.to_categorical(np.load(sys.argv[2]).astype(int), 2)
 
-train_size = 6000
+x_test = np.load(sys.argv[3]).astype(float) / 255.0
+y_test = tf.keras.utils.to_categorical(np.load(sys.argv[4]).astype(int), 2)
 
-x_train = x_data[:train_size].astype(float) / 255.0
-y_train = tf.keras.utils.to_categorical(y_data[:train_size], 3)
-x_test = x_data[train_size:].astype(float) / 255.0
-y_test = tf.keras.utils.to_categorical(y_data[train_size:], 3)
+# train_size = 6000
+
+# x_train = x_data[:train_size].astype(float) / 255.0
+# y_train = tf.keras.utils.to_categorical(y_data[:train_size], 3)
+# x_test = x_data[train_size:].astype(float) / 255.0
+# y_test = tf.keras.utils.to_categorical(y_data[train_size:], 3)
 
 
 # if __name__ == "__main__":
@@ -37,12 +40,12 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dropout(0.25),
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(3, activation='softmax')
+    tf.keras.layers.Dense(2, activation='softmax')
 ])
 
 model.compile(optimizer='adam',
               loss="categorical_crossentropy",
               metrics=['accuracy'])
 
-model.fit(x_train, y_train, epochs=50)
+model.fit(x_train, y_train, epochs=5)
 model.evaluate(x_test, y_test, verbose=2)
